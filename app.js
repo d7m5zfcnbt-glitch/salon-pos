@@ -1,347 +1,234 @@
-/* =========================
-   Supabase
-========================= */
+const supabaseUrl = "你的 Supabase URL"
 
-const supabaseUrl = "https://oriooahtniqqnuldybal.supabase.co"
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yaW9vYWh0bmlxcW51bGR5YmFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDY4MzAsImV4cCI6MjA5NTEyMjgzMH0.9JWDo1vXM27KvDJKaDH9fwe7G4Ag_4jQeOb0rimC6Y0"
+const supabaseKey = "你的 Publishable key"
 
-const db = window.supabase.createClient(supabaseUrl, supabaseKey)
+const db = window.supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+)
 
-/* =========================
-   資料
-========================= */
-
-let products = []
-let totalSales = 0
 let currentUser = null
+
+let totalSales = 0
 
 /* =========================
    登入
 ========================= */
 
 async function login(){
-  const email = document.getElementById("loginEmail").value
-  const password = document.getElementById("loginPassword").value
 
-  const { data, error } = await db.auth.signInWithPassword({
-    email,
-    password
-  })
+  const email =
+    document.getElementById("loginEmail").value
+
+  const password =
+    document.getElementById("loginPassword").value
+
+  const { data, error } =
+    await db.auth.signInWithPassword({
+
+      email,
+      password
+
+    })
 
   if(error){
-    console.log(error)
+
     alert("登入失敗")
+
+    console.log(error)
+
     return
   }
 
   currentUser = data.user
 
   document.getElementById("authBox").style.display = "none"
+
   document.getElementById("posApp").style.display = "grid"
 
-  loadProducts()
-  loadSales()
+  loadOrders()
+
 }
 
 /* =========================
-   讀取商品
+   建立服務單
 ========================= */
 
-async function loadProducts(){
-  const { data, error } = await db
-    .from("products")
-    .select("*")
-    .order("id", { ascending:false })
+async function createServiceOrder(){
 
-  if(error){
-    console.log(error)
-    alert("讀取商品失敗")
-    return
-  }
+  const orderNumber =
+    document.getElementById("orderNumber").value
 
-  products = data
-  renderProducts()
-}
+  const customerName =
+    document.getElementById("customerName").value
 
-/* =========================
-   讀取銷售紀錄
-========================= */
+  const designerName =
+    document.getElementById("designerName").value
 
-async function loadSales(){
-  const { data, error } = await db
-    .from("sales")
-    .select("*")
-    .order("created_at", { ascending:false })
+  const serviceName =
+    document.getElementById("serviceName").value
 
-  if(error){
-    console.log(error)
-    return
-  }
+  const amount =
+    Number(document.getElementById("serviceAmount").value)
 
-  totalSales = data.reduce((sum, item) => sum + Number(item.price), 0)
+  const paymentMethod =
+    document.getElementById("paymentMethod").value
 
-  renderSales(data)
-  updateSalesBox()
-}
+  const note =
+    document.getElementById("serviceNote").value
 
-/* =========================
-   新增商品
-========================= */
+  if(
+    orderNumber === "" ||
+    customerName === "" ||
+    designerName === "" ||
+    serviceName === "" ||
+    amount <= 0
+  ){
 
-async function addProduct(){
-  const name = document.getElementById("productName").value
-  const stock = Number(document.getElementById("productStock").value)
-  const price = Number(document.getElementById("productPrice").value)
-
-  if(name === "" || stock <= 0 || price <= 0){
     alert("請輸入完整資料")
+
     return
   }
 
   const { error } = await db
-    .from("products")
+    .from("service_orders")
     .insert([
+
       {
-        name,
-        stock,
-        price
+        order_number:orderNumber,
+        customer_name:customerName,
+        designer_name:designerName,
+        service_name:serviceName,
+        amount:amount,
+        payment_method:paymentMethod,
+        note:note
       }
+
     ])
 
   if(error){
+
     console.log(error)
-    alert("新增失敗")
+
+    alert("建立失敗")
+
     return
   }
 
-  document.getElementById("productName").value = ""
-  document.getElementById("productStock").value = ""
-  document.getElementById("productPrice").value = ""
+  document.getElementById("orderNumber").value =
+    Number(orderNumber) + 1
 
-  loadProducts()
+  document.getElementById("customerName").value = ""
+
+  document.getElementById("designerName").value = ""
+
+  document.getElementById("serviceName").value = ""
+
+  document.getElementById("serviceAmount").value = ""
+
+  document.getElementById("serviceNote").value = ""
+
+  loadOrders()
+
 }
 
 /* =========================
-   賣出商品
+   讀取開單
 ========================= */
 
-async function sellProduct(index){
-  const product = products[index]
+async function loadOrders(){
 
-  if(product.stock <= 0){
-    alert("庫存不足")
-    return
-  }
-
-  const { error:updateError } = await db
-    .from("products")
-    .update({
-      stock:product.stock - 1
-    })
-    .eq("id", product.id)
-
-  if(updateError){
-    console.log(updateError)
-    alert("銷售失敗")
-    return
-  }
-
-  const { error:salesError } = await db
-    .from("sales")
-    .insert([
-      {
-        product_name:product.name,
-        price:product.price
-      }
-    ])
-
-  if(salesError){
-    console.log(salesError)
-    alert("銷售紀錄寫入失敗")
-    return
-  }
-
-  loadProducts()
-  loadSales()
-}
-
-/* =========================
-   增加庫存
-========================= */
-
-async function addStock(index){
-  const product = products[index]
-
-  const { error } = await db
-    .from("products")
-    .update({
-      stock:product.stock + 1
-    })
-    .eq("id", product.id)
+  const { data, error } = await db
+    .from("service_orders")
+    .select("*")
+    .order("id",{ ascending:false })
 
   if(error){
+
     console.log(error)
-    alert("補庫存失敗")
+
     return
   }
 
-  loadProducts()
+  renderOrders(data)
+
 }
 
 /* =========================
-   減少庫存
+   顯示開單
 ========================= */
 
-async function minusStock(index){
-  const product = products[index]
+function renderOrders(orders){
 
-  if(product.stock <= 0){
-    alert("庫存不能小於 0")
-    return
-  }
+  const orderList =
+    document.getElementById("orderList")
 
-  const { error } = await db
-    .from("products")
-    .update({
-      stock:product.stock - 1
-    })
-    .eq("id", product.id)
+  orderList.innerHTML = ""
 
-  if(error){
-    console.log(error)
-    alert("扣庫存失敗")
-    return
-  }
+  totalSales = 0
 
-  loadProducts()
-}
+  orders.forEach(order => {
 
-/* =========================
-   刪除商品
-========================= */
+    totalSales += Number(order.amount)
 
-async function deleteProduct(index){
-  const product = products[index]
+    const time =
+      new Date(order.order_date)
 
-  const confirmDelete = confirm(`確定刪除「${product.name}」？`)
+    orderList.innerHTML += `
 
-  if(!confirmDelete){
-    return
-  }
-
-  const { error } = await db
-    .from("products")
-    .delete()
-    .eq("id", product.id)
-
-  if(error){
-    console.log(error)
-    alert("刪除失敗")
-    return
-  }
-
-  loadProducts()
-}
-
-/* =========================
-   匯出 CSV
-========================= */
-
-function exportCSV(){
-  let csv = "商品名稱,售價,庫存\n"
-
-  products.forEach(product => {
-    csv += `${product.name},${product.price},${product.stock}\n`
-  })
-
-  csv += `\n總營收,${totalSales}\n`
-
-  const blob = new Blob([csv], {
-    type:"text/csv;charset=utf-8;"
-  })
-
-  const link = document.createElement("a")
-  link.href = URL.createObjectURL(blob)
-  link.download = "salon-pos-report.csv"
-  link.click()
-}
-
-/* =========================
-   畫面：商品卡
-========================= */
-
-function renderProducts(){
-  const productList = document.getElementById("productList")
-
-  productList.innerHTML = ""
-
-  products.forEach((product,index) => {
-    productList.innerHTML += `
       <div class="product-card">
 
-        <div class="product-name">${product.name}</div>
+        <div class="product-name">
 
-        <div class="product-price">NT$${product.price}</div>
+          #${order.order_number}
 
-        <div class="product-stock">庫存：${product.stock}</div>
-
-        <div class="product-actions">
-          <button class="sell-btn" onclick="sellProduct(${index})">賣出</button>
-          <button class="stock-btn" onclick="addStock(${index})">＋庫存</button>
-          <button class="minus-btn" onclick="minusStock(${index})">－庫存</button>
-          <button class="delete-btn" onclick="deleteProduct(${index})">刪除</button>
         </div>
 
-      </div>
-    `
-  })
+        <div class="product-stock">
 
-  updateSalesBox()
-}
+          客人：${order.customer_name}
 
-/* =========================
-   畫面：銷售紀錄
-========================= */
-
-function renderSales(sales){
-  const salesList = document.getElementById("salesList")
-
-  if(!salesList){
-    return
-  }
-
-  salesList.innerHTML = ""
-
-  sales.forEach(item => {
-    const time = new Date(item.created_at)
-
-    salesList.innerHTML += `
-      <div class="sale-item">
-
-        <div>
-          <strong>${item.product_name}</strong><br>
-          <span>NT$${item.price}</span>
         </div>
 
-        <div class="sale-time">
+        <div class="product-stock">
+
+          設計師：${order.designer_name}
+
+        </div>
+
+        <div class="product-stock">
+
+          項目：${order.service_name}
+
+        </div>
+
+        <div class="product-price">
+
+          NT$${order.amount}
+
+        </div>
+
+        <div class="product-stock">
+
+          ${order.payment_method}
+
+        </div>
+
+        <div class="product-stock">
+
           ${time.toLocaleString()}
+
         </div>
 
       </div>
+
     `
+
   })
-}
 
-/* =========================
-   畫面：營收
-========================= */
+  document.getElementById("salesBox").innerHTML =
+    `今日營收：NT$${totalSales}`
 
-function updateSalesBox(){
-  const salesBox = document.querySelector(".sales-box")
-
-  if(salesBox){
-    salesBox.innerHTML = `今日營收：NT$${totalSales}`
-  }
 }
 
 /* =========================
