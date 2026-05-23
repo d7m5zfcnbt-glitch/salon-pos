@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salon POS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div id="authBox">
+    <h2>登入系統</h2>
+
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="密碼">
+
+    <button class="login-btn" onclick="login()">登入</button>
+  </div>
+
+  <div class="container" id="posApp">
+
+    <aside class="sidebar">
+      <div class="logo">Salon POS</div>
+
+      <div class="menu">
+        <button>商品管理</button>
+        <button>銷售紀錄</button>
+        <button>庫存管理</button>
+        <button>報表</button>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <div class="top-bar">
+        <div class="top-title">商品管理</div>
+
+        <div class="sales-box">
+          今日營收：NT$0
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>新增商品</h2>
+
+        <input type="text" id="productName" placeholder="商品名稱">
+        <input type="number" id="productStock" placeholder="庫存數量">
+        <input type="number" id="productPrice" placeholder="商品售價">
+
+        <button onclick="addProduct()">新增商品</button>
+      </div>
+
+      <div class="card">
+        <div class="top-bar">
+          <h2>商品列表</h2>
+          <button onclick="exportCSV()">匯出 Excel</button>
+        </div>
+
+        <div id="productList" class="product-grid"></div>
+      </div>
+
+      <div class="card">
+        <h2>銷售紀錄</h2>
+        <div id="salesList"></div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
