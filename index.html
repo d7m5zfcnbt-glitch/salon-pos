@@ -1,116 +1,119 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-
 <head>
-
   <meta charset="UTF-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Mori Salon POS</title>
-
   <link rel="stylesheet" href="style.css">
-
 </head>
-
 <body>
 
-  <div id="authBox">
-
+  <div id="authBox" class="login-box">
     <h2>登入系統</h2>
-
     <input type="email" id="loginEmail" placeholder="Email">
-
     <input type="password" id="loginPassword" placeholder="密碼">
-
-    <button class="login-btn" onclick="login()">
-      登入
-    </button>
-
+    <button onclick="login()">登入</button>
   </div>
 
-  <div class="container" id="posApp">
+  <div class="app" id="posApp">
 
     <aside class="sidebar">
-
-      <div class="logo">
-        Mori POS
-      </div>
-
-      <div class="menu">
-
-        <button>服務開單</button>
-
-        <button>業績紀錄</button>
-
-        <button>設計師報表</button>
-
-      </div>
-
+      <h1>Mori POS</h1>
+      <button onclick="showPage('orderPage')">開單</button>
+      <button onclick="showPage('productPage')">商品庫存</button>
+      <button onclick="showPage('techniquePage')">技術列表</button>
     </aside>
 
     <main class="main">
 
-      <div class="top-bar">
-
-        <div class="top-title">
-          服務開單
+      <section id="orderPage" class="page">
+        <div class="topbar">
+          <h2>服務開單</h2>
+          <div id="salesBox" class="sales-box">總金額：NT$0</div>
         </div>
 
-        <div class="sales-box" id="salesBox">
-          今日營收：NT$0
+        <div class="order-layout">
+
+          <div>
+            <div class="card">
+              <h3>單據資料</h3>
+              <input type="number" id="orderNumber" placeholder="單號">
+              <input type="text" id="customerName" placeholder="客人姓名">
+              <input type="text" id="designerName" placeholder="設計師">
+
+              <select id="paymentMethod">
+                <option value="現金">現金</option>
+                <option value="LinePay">LinePay</option>
+                <option value="信用卡">信用卡</option>
+                <option value="轉帳">轉帳</option>
+              </select>
+
+              <textarea id="orderNote" placeholder="備註"></textarea>
+            </div>
+
+            <div class="card">
+              <h3>技術項目</h3>
+              <div id="techniqueOrderList" class="item-grid"></div>
+            </div>
+
+            <div class="card">
+              <h3>商品銷售</h3>
+              <div id="productOrderList" class="item-grid"></div>
+            </div>
+          </div>
+
+          <div class="card order-cart">
+            <h3>本次訂單</h3>
+            <div id="currentOrderItems"></div>
+
+            <div id="totalAmount" class="total-box">
+              總金額：NT$0
+            </div>
+
+            <button onclick="submitOrder()">送出訂單</button>
+          </div>
+
         </div>
 
-      </div>
+        <div class="card">
+          <h3>開單紀錄</h3>
+          <div id="orderList"></div>
+        </div>
+      </section>
 
-      <div class="card">
+      <section id="productPage" class="page">
+        <h2>商品庫存</h2>
 
-        <h2>新增服務單</h2>
+        <div class="card">
+          <input type="text" id="productName" placeholder="商品名稱">
+          <input type="number" id="productStock" placeholder="庫存數量">
+          <input type="number" id="productPrice" placeholder="商品售價">
+          <button onclick="addProduct()">新增商品</button>
+        </div>
 
-        <input type="number" id="orderNumber" placeholder="單號">
+        <div class="card">
+          <div id="productList"></div>
+        </div>
+      </section>
 
-        <input type="text" id="customerName" placeholder="客人姓名">
+      <section id="techniquePage" class="page">
+        <h2>技術列表</h2>
 
-        <input type="text" id="designerName" placeholder="設計師">
+        <div class="card">
+          <input type="text" id="techniqueName" placeholder="技術名稱，例如：剪髮、燙髮、染髮">
+          <input type="number" id="techniquePrice" placeholder="預設價格">
+          <button onclick="addTechnique()">新增技術</button>
+        </div>
 
-        <input type="text" id="serviceName" placeholder="服務項目">
-
-        <input type="number" id="serviceAmount" placeholder="金額">
-
-        <select id="paymentMethod">
-
-          <option value="現金">現金</option>
-
-          <option value="LinePay">LinePay</option>
-
-          <option value="信用卡">信用卡</option>
-
-        </select>
-
-        <textarea id="serviceNote" placeholder="備註"></textarea>
-
-        <button onclick="createServiceOrder()">
-          建立服務單
-        </button>
-
-      </div>
-
-      <div class="card">
-
-        <h2>今日開單紀錄</h2>
-
-        <div id="orderList"></div>
-
-      </div>
+        <div class="card">
+          <div id="techniqueList"></div>
+        </div>
+      </section>
 
     </main>
-
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
   <script src="app.js"></script>
-
 </body>
-
 </html>
